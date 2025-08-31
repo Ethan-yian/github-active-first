@@ -44,6 +44,21 @@
       .card-shadow {
         @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
       }
+      /* 移动端适配 */
+      @media (max-width: 768px) {
+        .schedule-cell {
+          min-height: 60px;
+          padding: 0.25rem;
+        }
+        .table-header-cell {
+          padding: 0.5rem;
+          font-size: 0.75rem;
+        }
+        .time-cell {
+          padding: 0.5rem;
+          font-size: 0.75rem;
+        }
+      }
     }
   </style>
 </head>
@@ -58,7 +73,11 @@
       </div>
       
       <div class="flex items-center space-x-4 mt-2 md:mt-0">
-        <button id="saveBtn" class="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow">
+        <button id="loginBtn" class="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow">
+          <i class="fa fa-user"></i>
+          <span id="loginText">登录</span>
+        </button>
+        <button id="saveBtn" class="admin-only hidden flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow">
           <i class="fa fa-save"></i>
           <span>保存课程表</span>
         </button>
@@ -92,11 +111,11 @@
         </div>
         
         <div class="flex items-center space-x-3">
-          <button id="addCourseBtn" class="flex items-center space-x-1 bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-all duration-200">
+          <button id="addCourseBtn" class="admin-only hidden flex items-center space-x-1 bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-all duration-200">
             <i class="fa fa-plus"></i>
             <span>添加课程</span>
           </button>
-          <button id="clearBtn" class="flex items-center space-x-1 bg-danger/10 text-danger px-4 py-2 rounded-lg hover:bg-danger/20 transition-all duration-200">
+          <button id="clearBtn" class="admin-only hidden flex items-center space-x-1 bg-danger/10 text-danger px-4 py-2 rounded-lg hover:bg-danger/20 transition-all duration-200">
             <i class="fa fa-trash"></i>
             <span>清空</span>
           </button>
@@ -129,14 +148,14 @@
       <table class="w-full border-collapse">
         <thead>
           <tr class="bg-gray-50">
-            <th class="p-3 border border-gray-200 text-left w-32">节次/时间</th>
-            <th class="p-3 border border-gray-200 text-center">周一</th>
-            <th class="p-3 border border-gray-200 text-center">周二</th>
-            <th class="p-3 border border-gray-200 text-center">周三</th>
-            <th class="p-3 border border-gray-200 text-center">周四</th>
-            <th class="p-3 border border-gray-200 text-center">周五</th>
-            <th class="p-3 border border-gray-200 text-center">周六</th>
-            <th class="p-3 border border-gray-200 text-center">周日</th>
+            <th class="p-3 border border-gray-200 text-left w-32 table-header-cell">节次/时间</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周一</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周二</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周三</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周四</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周五</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周六</th>
+            <th class="p-3 border border-gray-200 text-center table-header-cell">周日</th>
           </tr>
         </thead>
         <tbody id="scheduleBody">
@@ -145,6 +164,39 @@
       </table>
     </div>
   </main>
+
+  <!-- 登录模态框 -->
+  <div id="loginModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">管理员登录</h3>
+        <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="loginForm" class="p-5 space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名 <span class="text-danger">*</span></label>
+          <input type="text" id="username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+        </div>
+        
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码 <span class="text-danger">*</span></label>
+          <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+        </div>
+      </form>
+      
+      <div class="p-4 border-t border-gray-200 flex justify-end space-x-3">
+        <button id="cancelLoginBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          取消
+        </button>
+        <button id="submitLoginBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          登录
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 添加/编辑课程模态框 -->
   <div id="courseModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
@@ -229,6 +281,7 @@
     let currentWeek = 1;
     let scheduleData = {};
     let editingCourseId = null;
+    let isAdmin = false;
     const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
     const PERIODS = [
       {id: 1, time: '08:00-09:40'},
@@ -238,6 +291,10 @@
       {id: 5, time: '18:30-20:10'},
       {id: 6, time: '20:20-22:00'}
     ];
+    const ADMIN_CREDENTIALS = {
+      username: 'root',
+      password: 'github'
+    };
 
     // DOM 元素
     const scheduleBody = document.getElementById('scheduleBody');
@@ -258,12 +315,47 @@
     const notification = document.getElementById('notification');
     const notificationText = document.getElementById('notificationText');
     const notificationIcon = document.getElementById('notificationIcon');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginModalBtn = document.getElementById('closeLoginModal');
+    const cancelLoginBtn = document.getElementById('cancelLoginBtn');
+    const submitLoginBtn = document.getElementById('submitLoginBtn');
+    const loginForm = document.getElementById('loginForm');
+    const adminOnlyElements = document.querySelectorAll('.admin-only');
 
     // 初始化
     function init() {
       loadScheduleData();
+      checkLoginStatus();
       renderSchedule();
       setupEventListeners();
+      updateAdminUI();
+    }
+
+    // 检查登录状态
+    function checkLoginStatus() {
+      const loginData = localStorage.getItem('adminLogin');
+      if (loginData) {
+        const { username, timestamp } = JSON.parse(loginData);
+        // 检查是否在1小时内登录（会话有效期为1小时）
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+        if (username === ADMIN_CREDENTIALS.username && timestamp > oneHourAgo) {
+          isAdmin = true;
+          loginText.textContent = '退出';
+        }
+      }
+    }
+
+    // 更新管理员UI
+    function updateAdminUI() {
+      if (isAdmin) {
+        adminOnlyElements.forEach(el => el.classList.remove('hidden'));
+        loginText.textContent = '退出';
+      } else {
+        adminOnlyElements.forEach(el => el.classList.add('hidden'));
+        loginText.textContent = '登录';
+      }
     }
 
     // 从本地存储加载课程表数据
@@ -291,6 +383,12 @@
 
     // 保存课程表数据到本地存储
     function saveScheduleData() {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能保存', 'error');
+        openLoginModal();
+        return;
+      }
+      
       localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
       localStorage.setItem('scheduleName', scheduleNameEl.value);
       showNotification('课程表已保存', 'success');
@@ -305,7 +403,7 @@
         
         // 节次和时间单元格
         const periodCell = document.createElement('td');
-        periodCell.className = 'p-3 border border-gray-200 bg-gray-50 font-medium';
+        periodCell.className = 'p-3 border border-gray-200 bg-gray-50 font-medium time-cell';
         periodCell.innerHTML = `
           <div>第${period.id}节</div>
           <div class="text-sm text-gray-500">${period.time}</div>
@@ -342,25 +440,29 @@
             
             cell.innerHTML = `
               <div class="h-full w-full rounded-md p-2 ${bgClass} relative group">
-                <div class="font-medium">${course.name}</div>
-                <div class="text-sm text-gray-600 mt-1">${course.teacher || ''}</div>
-                <div class="text-sm text-gray-600">${course.location || ''}</div>
+                <div class="font-medium text-sm md:text-base">${course.name}</div>
+                <div class="text-xs md:text-sm text-gray-600 mt-1">${course.teacher || ''}</div>
+                <div class="text-xs md:text-sm text-gray-600">${course.location || ''}</div>
                 ${course.time ? `<div class="text-xs text-gray-500 mt-1">${course.time}</div>` : ''}
-                ${course.notes ? `<div class="text-xs text-gray-600 mt-1">备注: ${course.notes}</div>` : ''}
-                <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                ${course.notes ? `<div class="text-xs text-gray-600 mt-1 hidden md:block">备注: ${course.notes}</div>` : ''}
+                ${isAdmin ? `<div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button class="edit-course p-1 rounded-full bg-white/70 hover:bg-white shadow-sm text-gray-700">
                     <i class="fa fa-pencil"></i>
                   </button>
-                </div>
+                </div>` : ''}
               </div>
             `;
           } else {
-            // 空单元格，显示添加按钮
-            cell.innerHTML = `
-              <button class="add-course w-full h-full flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
-                <i class="fa fa-plus-circle"></i>
-              </button>
-            `;
+            // 空单元格，显示添加按钮（仅管理员）
+            if (isAdmin) {
+              cell.innerHTML = `
+                <button class="add-course w-full h-full flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
+                  <i class="fa fa-plus-circle"></i>
+                </button>
+              `;
+            } else {
+              cell.innerHTML = '';
+            }
           }
           
           row.appendChild(cell);
@@ -372,6 +474,11 @@
       // 添加课程点击事件
       document.querySelectorAll('.add-course').forEach(btn => {
         btn.addEventListener('click', e => {
+          if (!isAdmin) {
+            showNotification('需要管理员权限才能添加课程', 'error');
+            openLoginModal();
+            return;
+          }
           const cell = e.target.closest('td');
           openAddCourseModal(cell.dataset.day, cell.dataset.period);
         });
@@ -380,6 +487,11 @@
       // 编辑课程点击事件
       document.querySelectorAll('.edit-course').forEach(btn => {
         btn.addEventListener('click', e => {
+          if (!isAdmin) {
+            showNotification('需要管理员权限才能编辑课程', 'error');
+            openLoginModal();
+            return;
+          }
           const cell = e.target.closest('td');
           const course = scheduleData[cell.dataset.key];
           if (course) {
@@ -389,8 +501,59 @@
       });
     }
 
+    // 打开登录模态框
+    function openLoginModal() {
+      loginModal.classList.remove('opacity-0', 'pointer-events-none');
+      loginModal.querySelector('div').classList.remove('scale-95');
+      loginModal.querySelector('div').classList.add('scale-100');
+      document.getElementById('username').focus();
+    }
+
+    // 关闭登录模态框
+    function closeLoginModal() {
+      loginModal.classList.add('opacity-0', 'pointer-events-none');
+      loginModal.querySelector('div').classList.remove('scale-100');
+      loginModal.querySelector('div').classList.add('scale-95');
+      loginForm.reset();
+    }
+
+    // 处理登录
+    function handleLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+        isAdmin = true;
+        localStorage.setItem('adminLogin', JSON.stringify({
+          username,
+          timestamp: Date.now()
+        }));
+        updateAdminUI();
+        renderSchedule();
+        closeLoginModal();
+        showNotification('管理员登录成功', 'success');
+      } else {
+        showNotification('用户名或密码错误', 'error');
+      }
+    }
+
+    // 处理退出登录
+    function handleLogout() {
+      isAdmin = false;
+      localStorage.removeItem('adminLogin');
+      updateAdminUI();
+      renderSchedule();
+      showNotification('已退出管理员账户', 'success');
+    }
+
     // 打开添加课程模态框
     function openAddCourseModal(day, period) {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能添加课程', 'error');
+        openLoginModal();
+        return;
+      }
+      
       editingCourseId = null;
       courseForm.reset();
       document.getElementById('modalTitle').textContent = '添加课程';
@@ -409,6 +572,12 @@
 
     // 打开编辑课程模态框
     function openEditCourseModal(key, course, day, period) {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能编辑课程', 'error');
+        openLoginModal();
+        return;
+      }
+      
       editingCourseId = key;
       document.getElementById('modalTitle').textContent = '编辑课程';
       document.getElementById('courseId').value = key;
@@ -442,6 +611,12 @@
 
     // 保存课程
     function saveCourse() {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能保存课程', 'error');
+        openLoginModal();
+        return;
+      }
+      
       const name = document.getElementById('courseName').value.trim();
       if (!name) {
         showNotification('请输入课程名称', 'error');
@@ -471,6 +646,12 @@
 
     // 删除课程
     function deleteCourse() {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能删除课程', 'error');
+        openLoginModal();
+        return;
+      }
+      
       if (editingCourseId && confirm('确定要删除这门课程吗？')) {
         scheduleData[editingCourseId] = null;
         saveScheduleData();
@@ -482,6 +663,12 @@
 
     // 清空课程表
     function clearSchedule() {
+      if (!isAdmin) {
+        showNotification('需要管理员权限才能清空课程表', 'error');
+        openLoginModal();
+        return;
+      }
+      
       if (confirm('确定要清空所有课程吗？此操作不可恢复。')) {
         PERIODS.forEach(period => {
           DAYS.forEach((day, dayIndex) => {
@@ -548,8 +735,27 @@
         currentWeekEl.textContent = `第${currentWeek}周 课程表`;
       });
       
+      // 登录按钮
+      loginBtn.addEventListener('click', () => {
+        if (isAdmin) {
+          handleLogout();
+        } else {
+          openLoginModal();
+        }
+      });
+      
+      // 登录模态框控制
+      closeLoginModalBtn.addEventListener('click', closeLoginModal);
+      cancelLoginBtn.addEventListener('click', closeLoginModal);
+      submitLoginBtn.addEventListener('click', handleLogin);
+      
       // 添加课程按钮
       addCourseBtn.addEventListener('click', () => {
+        if (!isAdmin) {
+          showNotification('需要管理员权限才能添加课程', 'error');
+          openLoginModal();
+          return;
+        }
         openAddCourseModal(0, 1); // 默认添加到周一第一节
       });
       
@@ -579,8 +785,18 @@
         }
       });
       
+      loginModal.addEventListener('click', e => {
+        if (e.target === loginModal) {
+          closeLoginModal();
+        }
+      });
+      
       // 防止模态框内部点击冒泡
       courseModal.querySelector('div').addEventListener('click', e => {
+        e.stopPropagation();
+      });
+      
+      loginModal.querySelector('div').addEventListener('click', e => {
         e.stopPropagation();
       });
       
@@ -598,6 +814,19 @@
           header.classList.remove('py-2', 'shadow');
         }
       });
+
+      // 移动端适配：调整字体大小和布局
+      function checkMobileView() {
+        if (window.innerWidth < 768) {
+          document.body.classList.add('mobile-view');
+        } else {
+          document.body.classList.remove('mobile-view');
+        }
+      }
+
+      // 初始检查和窗口调整时检查
+      checkMobileView();
+      window.addEventListener('resize', checkMobileView);
     }
 
     // 初始化应用
