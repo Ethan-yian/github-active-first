@@ -7,6 +7,9 @@
   <!-- 引入外部资源 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 添加jsPDF库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   
   <!-- Tailwind 配置 -->
   <script>
@@ -126,19 +129,19 @@
       <div class="flex flex-wrap gap-3 mt-4 text-sm">
         <div class="flex items-center">
           <span class="w-3 h-3 rounded-full bg-blue-100 border border-blue-300 inline-block mr-1"></span>
-          <span>理论课</span>
+          <span>XX课</span>
         </div>
         <div class="flex items-center">
           <span class="w-3 h-3 rounded-full bg-green-100 border border-green-300 inline-block mr-1"></span>
-          <span>实验课</span>
+          <span>实操</span>
         </div>
         <div class="flex items-center">
           <span class="w-3 h-3 rounded-full bg-purple-100 border border-purple-300 inline-block mr-1"></span>
-          <span>选修课</span>
+          <span>XX课</span>
         </div>
         <div class="flex items-center">
           <span class="w-3 h-3 rounded-full bg-yellow-100 border border-yellow-300 inline-block mr-1"></span>
-          <span>公共课</span>
+          <span>XX课</span>
         </div>
       </div>
     </div>
@@ -272,7 +275,8 @@
   <!-- 页脚 -->
   <footer class="bg-white border-t border-gray-200 py-4">
     <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-      <p>© 2025 实验安排系统 - 让课程管理更简单</p>
+      <p>© 2025 实验安排系统</p>
+      <p>你行你上，不服就干！！！--chunle Wei</p>
     </div>
   </footer>
 
@@ -284,16 +288,18 @@
     let isAdmin = false;
     const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
     const PERIODS = [
-      {id: 1, time: '08:00-09:40'},
-      {id: 2, time: '10:00-11:40'},
-      {id: 3, time: '13:30-15:10'},
-      {id: 4, time: '15:30-17:10'},
-      {id: 5, time: '18:30-20:10'},
-      {id: 6, time: '20:20-22:00'}
+      {id: 1, time: '08:10-08:55'},
+      {id: 2, time: '09:05-09:50'},
+      {id: 3, time: '10:10-10:55'},
+      {id: 4, time: '11:05-11:50'},
+      {id: 5, time: '14:30-15:15'},
+      {id: 6, time: '15:25-16:10'},
+      {id: 7, time: '16:20-17:05'},
+      {id: 8, time: '17:15-18:00'},
     ];
     const ADMIN_CREDENTIALS = {
-      username: 'root',
-      password: 'github'
+      username: '1233',
+      password: '1233'
     };
 
     // DOM 元素
@@ -683,24 +689,86 @@
       }
     }
 
-    // 导出课程表
+    // 导出课程表为PDF
     function exportSchedule() {
-      // 这里简化处理，实际项目中可以使用库导出为Excel
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape', 'mm', 'a4');
+      
       const name = scheduleNameEl.value || `第${currentWeek}周课程表`;
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-        name,
-        week: currentWeek,
-        data: scheduleData
-      }, null, 2));
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 10;
       
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `${name}.json`);
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+      // 添加标题
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text(name, pageWidth / 2, margin + 8, { align: 'center' });
       
-      showNotification('课程表已导出', 'success');
+      // 添加日期信息
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      doc.text(`导出日期: ${new Date().toLocaleDateString()}`, pageWidth - margin, margin + 6, { align: 'right' });
+      
+      // 准备表格数据
+      const tableData = [];
+      const tableHeaders = ['节次/时间', ...DAYS];
+      
+      PERIODS.forEach(period => {
+        const row = [`第${period.id}节\n${period.time}`];
+        
+        DAYS.forEach((day, dayIndex) => {
+          const cellKey = `${dayIndex}-${period.id}`;
+          const course = scheduleData[cellKey];
+          
+          if (course) {
+            let courseText = course.name;
+            if (course.teacher) courseText += `\n教师: ${course.teacher}`;
+            if (course.location) courseText += `\n地点: ${course.location}`;
+            if (course.time) courseText += `\n时间: ${course.time}`;
+            
+            row.push(courseText);
+          } else {
+            row.push('');
+          }
+        });
+        
+        tableData.push(row);
+      });
+      
+      // 生成PDF表格
+      doc.autoTable({
+        startY: margin + 15,
+        head: [tableHeaders],
+        body: tableData,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+          lineColor: [75, 75, 75],
+          lineWidth: 0.1
+        },
+        headStyles: {
+          fillColor: [241, 245, 249],
+          textColor: [31, 41, 55],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251]
+        },
+        margin: { top: margin + 15 }
+      });
+      
+      // 添加页脚
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.text(`第 ${i} 页 / 共 ${pageCount} 页`, pageWidth / 2, pageHeight - margin, { align: 'center' });
+      }
+      
+      // 保存PDF
+      doc.save(`${name}.pdf`);
+      showNotification('课程表已导出为PDF', 'success');
     }
 
     // 显示通知
